@@ -2,29 +2,36 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+               maximum-scale=1.0, user-scalable=no">
+
 <title>CAPILIANO - Jungle Run</title>
 
 <style>
 
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
+html,
 body {
-    background: #07130c;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    background: #06130a;
+    font-family: Arial, Helvetica, sans-serif;
+    touch-action: none;
 }
 
 canvas {
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: block;
 }
 
@@ -32,102 +39,115 @@ canvas {
    PANTALLA DE INICIO
 ========================= */
 
-#menu {
+#startScreen {
+
     position: fixed;
     inset: 0;
-    z-index: 10;
+
+    z-index: 20;
 
     display: flex;
     flex-direction: column;
-    align-items: center;
+
     justify-content: center;
+    align-items: center;
+
+    text-align: center;
 
     background:
         linear-gradient(
-            rgba(2,20,10,.35),
-            rgba(1,10,5,.85)
+            rgba(5,30,14,.20),
+            rgba(2,12,7,.82)
         );
 
-    text-align: center;
+    pointer-events: auto;
 }
 
-.logo {
-    font-size: clamp(45px, 10vw, 95px);
+.title {
+
+    font-size:
+        clamp(48px, 12vw, 100px);
+
     font-weight: 1000;
+
     letter-spacing: 5px;
 
+    color: #f1d16a;
+
     text-shadow:
-        0 5px 0 #284d22,
-        0 10px 30px rgba(0,0,0,.8);
+        0 5px 0 #654b17,
+        0 12px 35px rgba(0,0,0,.8);
+
 }
 
 .subtitle {
-    margin-top: 8px;
-    font-size: clamp(13px, 3vw, 20px);
-    letter-spacing: 5px;
-    opacity: .85;
+
+    margin-top: 5px;
+
+    font-size:
+        clamp(12px, 3vw, 20px);
+
+    letter-spacing: 6px;
+
+    color: white;
+
+    opacity: .9;
+
 }
 
-.capybara-preview {
-    font-size: 100px;
+.startCapy {
+
+    font-size:
+        clamp(75px, 22vw, 150px);
+
     margin: 25px 0;
-    animation: bounce 1.4s infinite ease-in-out;
+
+    animation:
+        capyIdle 1.4s
+        ease-in-out infinite;
+
 }
 
-@keyframes bounce {
+@keyframes capyIdle {
 
     0%,100% {
         transform: translateY(0);
     }
 
     50% {
-        transform: translateY(-12px);
+        transform: translateY(-13px);
     }
 
 }
 
-#startButton {
+.tapText {
 
-    border: none;
+    font-size:
+        clamp(17px, 4vw, 27px);
 
-    padding: 18px 65px;
+    font-weight: 900;
 
-    border-radius: 50px;
+    letter-spacing: 4px;
 
-    background: #d6a83a;
+    color: white;
 
-    color: #171006;
-
-    font-size: 25px;
-
-    font-weight: 1000;
-
-    letter-spacing: 3px;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 8px 0 #80621d,
-        0 15px 35px rgba(0,0,0,.5);
-
-    transition: .15s;
+    animation:
+        blink 1.2s infinite;
 
 }
 
-#startButton:hover {
+@keyframes blink {
 
-    transform: translateY(-3px);
+    0%,100% {
+        opacity: 1;
+    }
 
-}
-
-#startButton:active {
-
-    transform: translateY(5px);
-
-    box-shadow:
-        0 3px 0 #80621d;
+    50% {
+        opacity: .45;
+    }
 
 }
+
 
 /* =========================
    HUD
@@ -137,102 +157,47 @@ canvas {
 
     position: fixed;
 
-    top: 18px;
+    top: 15px;
+    left: 15px;
+    right: 15px;
 
-    left: 18px;
-
-    right: 18px;
-
-    z-index: 5;
+    z-index: 10;
 
     display: none;
 
-    justify-content: space-between;
+    justify-content:
+        space-between;
 
     pointer-events: none;
 
 }
 
-.stat {
+.hudBox {
 
-    background: rgba(0,0,0,.45);
+    padding:
+        9px 15px;
 
-    backdrop-filter: blur(8px);
+    border-radius:
+        30px;
 
-    border: 1px solid rgba(255,255,255,.15);
+    background:
+        rgba(0,0,0,.42);
 
-    padding: 9px 15px;
-
-    border-radius: 30px;
-
-    font-weight: bold;
-
-}
-
-/* =========================
-   CONTROLES
-========================= */
-
-#controls {
-
-    position: fixed;
-
-    bottom: 20px;
-
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    z-index: 6;
-
-    display: none;
-
-    grid-template-columns:
-        repeat(3, 70px);
-
-    gap: 10px;
-
-}
-
-.control {
-
-    width: 70px;
-
-    height: 55px;
-
-    border-radius: 15px;
-
-    border: 1px solid rgba(255,255,255,.2);
-
-    background: rgba(0,0,0,.5);
+    border:
+        1px solid
+        rgba(255,255,255,.18);
 
     color: white;
 
-    font-size: 24px;
+    font-size: 15px;
 
-    font-weight: bold;
+    font-weight: 800;
 
-    backdrop-filter: blur(8px);
-
-}
-
-.control:active {
-
-    transform: scale(.92);
+    backdrop-filter:
+        blur(8px);
 
 }
 
-.jump {
-
-    grid-column: 2;
-
-}
-
-.roll {
-
-    grid-column: 2;
-
-}
 
 /* =========================
    GAME OVER
@@ -244,25 +209,29 @@ canvas {
 
     inset: 0;
 
-    z-index: 20;
+    z-index: 30;
 
     display: none;
 
     flex-direction: column;
 
-    justify-content: center;
-
     align-items: center;
+
+    justify-content: center;
 
     text-align: center;
 
-    background: rgba(0,0,0,.7);
+    background:
+        rgba(0,0,0,.72);
+
+    color: white;
 
 }
 
 #gameOver h1 {
 
-    font-size: clamp(35px,8vw,70px);
+    font-size:
+        clamp(34px, 8vw, 70px);
 
     margin-bottom: 15px;
 
@@ -270,45 +239,44 @@ canvas {
 
 #gameOver p {
 
-    font-size: 20px;
+    line-height: 1.8;
 
-    margin-bottom: 25px;
+    font-size: 19px;
 
 }
 
-#restartButton {
+#restartText {
 
-    padding: 15px 40px;
-
-    border: none;
-
-    border-radius: 40px;
-
-    background: #d6a83a;
+    margin-top: 30px;
 
     font-weight: 900;
 
     font-size: 18px;
 
-    cursor: pointer;
+    letter-spacing: 2px;
+
+    animation:
+        blink 1.2s infinite;
 
 }
 
 </style>
 </head>
 
+
 <body>
+
 
 <canvas id="game"></canvas>
 
 
 <!-- =========================
-     MENU
+     INICIO
 ========================= -->
 
-<div id="menu">
+<div id="startScreen">
 
-    <div class="logo">
+    <div class="title">
         CAPILIANO
     </div>
 
@@ -316,13 +284,13 @@ canvas {
         JUNGLE RUN
     </div>
 
-    <div class="capybara-preview">
+    <div class="startCapy">
         🦫
     </div>
 
-    <button id="startButton">
-        START
-    </button>
+    <div class="tapText">
+        TOCA PARA INICIAR
+    </div>
 
 </div>
 
@@ -333,30 +301,13 @@ canvas {
 
 <div id="hud">
 
-    <div class="stat">
+    <div class="hudBox">
         🪙 <span id="coins">0</span>
     </div>
 
-    <div class="stat">
+    <div class="hudBox">
         🏃 <span id="distance">0</span> m
     </div>
-
-</div>
-
-
-<!-- =========================
-     CONTROLES
-========================= -->
-
-<div id="controls">
-
-    <button class="control" id="left">←</button>
-
-    <button class="control" id="right">→</button>
-
-    <button class="control jump" id="jump">↑</button>
-
-    <button class="control roll" id="roll">↓</button>
 
 </div>
 
@@ -367,100 +318,130 @@ canvas {
 
 <div id="gameOver">
 
-    <h1>🐊 ¡TE ATRAPÓ!</h1>
+    <h1>
+        🐊 ¡TE ATRAPÓ!
+    </h1>
 
     <p>
-        Recorriste <b><span id="finalDistance">0</span> metros</b>
+
+        Recorriste
+        <strong>
+            <span id="finalDistance">0</span> metros
+        </strong>
+
         <br>
-        🪙 <span id="finalCoins">0</span> monedas
+
+        🪙
+        <span id="finalCoins">0</span>
+        monedas
+
     </p>
 
-    <button id="restartButton">
-        VOLVER A JUGAR
-    </button>
+    <div id="restartText">
+        TOCA PARA VOLVER A JUGAR
+    </div>
 
 </div>
 
 
 <script>
 
-/* ==========================================================
-   CAPILIANO - JUNGLE RUN
-========================================================== */
+/* =========================================================
+   CAPILIANO
+   JUNGLE RUN
+========================================================= */
 
-const canvas = document.getElementById("game");
 
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById("game");
+
+const ctx =
+    canvas.getContext("2d");
+
 
 let W;
 let H;
 
+
 function resize() {
 
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    W =
+        canvas.width =
+        window.innerWidth;
+
+    H =
+        canvas.height =
+        window.innerHeight;
 
 }
 
 resize();
 
-window.addEventListener("resize", resize);
+window.addEventListener(
+    "resize",
+    resize
+);
 
 
-/* ==========================================================
+/* =========================================================
    ELEMENTOS
-========================================================== */
+========================================================= */
 
-const menu =
-    document.getElementById("menu");
-
-const startButton =
-    document.getElementById("startButton");
+const startScreen =
+    document.getElementById(
+        "startScreen"
+    );
 
 const hud =
-    document.getElementById("hud");
-
-const controls =
-    document.getElementById("controls");
+    document.getElementById(
+        "hud"
+    );
 
 const gameOver =
-    document.getElementById("gameOver");
-
-const restartButton =
-    document.getElementById("restartButton");
+    document.getElementById(
+        "gameOver"
+    );
 
 const coinsText =
-    document.getElementById("coins");
+    document.getElementById(
+        "coins"
+    );
 
 const distanceText =
-    document.getElementById("distance");
+    document.getElementById(
+        "distance"
+    );
 
 const finalCoins =
-    document.getElementById("finalCoins");
+    document.getElementById(
+        "finalCoins"
+    );
 
 const finalDistance =
-    document.getElementById("finalDistance");
+    document.getElementById(
+        "finalDistance"
+    );
 
 
-/* ==========================================================
-   ESTADO DEL JUEGO
-========================================================== */
+/* =========================================================
+   ESTADO
+========================================================= */
 
 let playing = false;
 
-let gameTime = 0;
+let lastTime = 0;
 
 let distance = 0;
 
 let coins = 0;
 
-let speed = 0.35;
+let speed = 0.42;
 
 let lane = 1;
 
 let targetLane = 1;
 
-let jumpHeight = 0;
+let jump = 0;
 
 let jumpVelocity = 0;
 
@@ -468,44 +449,57 @@ let rolling = false;
 
 let objects = [];
 
-let particles = [];
+let trees = [];
+
+let groundMarks = [];
 
 let spawnTimer = 0;
 
-
-/* ==========================================================
-   CONFIGURACIÓN
-========================================================== */
-
-const lanes = [-1, 0, 1];
+let treeTimer = 0;
 
 
-/* ==========================================================
-   INICIAR
-========================================================== */
+/* =========================================================
+   GESTOS
+========================================================= */
 
-startButton.addEventListener("click", startGame);
+let touchStartX = 0;
 
-restartButton.addEventListener("click", startGame);
+let touchStartY = 0;
+
+let touchActive = false;
+
+
+/* =========================================================
+   INICIAR CON CUALQUIER TOQUE
+========================================================= */
+
+startScreen.addEventListener(
+    "pointerdown",
+    startGame
+);
+
+
+gameOver.addEventListener(
+    "pointerdown",
+    startGame
+);
 
 
 function startGame() {
 
     playing = true;
 
-    gameTime = 0;
-
     distance = 0;
 
     coins = 0;
 
-    speed = 0.35;
+    speed = 0.42;
 
     lane = 1;
 
     targetLane = 1;
 
-    jumpHeight = 0;
+    jump = 0;
 
     jumpVelocity = 0;
 
@@ -513,46 +507,147 @@ function startGame() {
 
     objects = [];
 
-    particles = [];
+    trees = [];
+
+    groundMarks = [];
 
     spawnTimer = 0;
 
-    menu.style.display = "none";
+    treeTimer = 0;
 
-    gameOver.style.display = "none";
+    startScreen.style.display =
+        "none";
 
-    hud.style.display = "flex";
+    gameOver.style.display =
+        "none";
 
-    controls.style.display = "grid";
+    hud.style.display =
+        "flex";
+
+    lastTime =
+        performance.now();
 
 }
 
 
-/* ==========================================================
-   FINAL
-========================================================== */
+/* =========================================================
+   GAME OVER
+========================================================= */
 
 function endGame() {
 
     playing = false;
 
-    finalCoins.textContent = coins;
+    finalCoins.textContent =
+        coins;
 
     finalDistance.textContent =
-        Math.floor(distance);
+        Math.floor(
+            distance
+        );
 
-    gameOver.style.display = "flex";
+    gameOver.style.display =
+        "flex";
 
 }
 
 
-/* ==========================================================
-   CONTROLES
-========================================================== */
+/* =========================================================
+   CONTROLES TÁCTILES
+========================================================= */
+
+canvas.addEventListener(
+    "pointerdown",
+    event => {
+
+        if (!playing)
+            return;
+
+        touchActive = true;
+
+        touchStartX =
+            event.clientX;
+
+        touchStartY =
+            event.clientY;
+
+    }
+);
+
+
+canvas.addEventListener(
+    "pointerup",
+    event => {
+
+        if (!playing ||
+            !touchActive)
+            return;
+
+        touchActive = false;
+
+        const dx =
+            event.clientX -
+            touchStartX;
+
+        const dy =
+            event.clientY -
+            touchStartY;
+
+        const absX =
+            Math.abs(dx);
+
+        const absY =
+            Math.abs(dy);
+
+
+        /* toque pequeño */
+
+        if (
+            absX < 35 &&
+            absY < 35
+        ) {
+
+            return;
+
+        }
+
+
+        /* movimiento horizontal */
+
+        if (
+            absX > absY
+        ) {
+
+            if (dx < 0)
+                moveLeft();
+
+            else
+                moveRight();
+
+        }
+
+
+        /* movimiento vertical */
+
+        else {
+
+            if (dy < 0)
+                jumpPlayer();
+
+            else
+                rollPlayer();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   MOVIMIENTO
+========================================================= */
 
 function moveLeft() {
-
-    if (!playing) return;
 
     targetLane--;
 
@@ -564,8 +659,6 @@ function moveLeft() {
 
 function moveRight() {
 
-    if (!playing) return;
-
     targetLane++;
 
     if (targetLane > 2)
@@ -574,243 +667,251 @@ function moveRight() {
 }
 
 
-function jump() {
+function jumpPlayer() {
 
-    if (!playing) return;
+    if (
+        jump === 0 &&
+        !rolling
+    ) {
 
-    if (jumpHeight === 0) {
-
-        jumpVelocity = 0.027;
+        jumpVelocity =
+            0.035;
 
     }
 
 }
 
 
-function roll() {
+function rollPlayer() {
 
-    if (!playing) return;
+    if (jump === 0) {
 
-    rolling = true;
+        rolling = true;
 
-    setTimeout(() => {
+        setTimeout(
+            () => {
+                rolling = false;
+            },
+            650
+        );
 
-        rolling = false;
-
-    }, 600);
+    }
 
 }
 
 
-document.getElementById("left")
-    .addEventListener("pointerdown", moveLeft);
-
-document.getElementById("right")
-    .addEventListener("pointerdown", moveRight);
-
-document.getElementById("jump")
-    .addEventListener("pointerdown", jump);
-
-document.getElementById("roll")
-    .addEventListener("pointerdown", roll);
-
-
-/* ==========================================================
+/* =========================================================
    TECLADO
-========================================================== */
+   TAMBIÉN FUNCIONA EN PC
+========================================================= */
 
-window.addEventListener("keydown", e => {
+window.addEventListener(
+    "keydown",
+    event => {
 
-    if (e.key === "ArrowLeft")
-        moveLeft();
+        if (!playing)
+            return;
 
-    if (e.key === "ArrowRight")
-        moveRight();
+        if (
+            event.key ===
+            "ArrowLeft"
+        )
+            moveLeft();
 
-    if (e.key === "ArrowUp")
-        jump();
+        if (
+            event.key ===
+            "ArrowRight"
+        )
+            moveRight();
 
-    if (e.key === "ArrowDown")
-        roll();
+        if (
+            event.key ===
+            "ArrowUp"
+        )
+            jumpPlayer();
 
-});
+        if (
+            event.key ===
+            "ArrowDown"
+        )
+            rollPlayer();
+
+    }
+);
 
 
-/* ==========================================================
-   UTILIDADES
-========================================================== */
+/* =========================================================
+   PERSPECTIVA
+========================================================= */
 
-function lerp(a,b,t) {
+function horizon() {
 
-    return a + (b-a)*t;
+    return H * 0.38;
 
 }
 
 
-function laneX(laneIndex, depth = 1) {
+function roadDepthY(
+    depth
+) {
 
-    const center = W / 2;
+    const top =
+        horizon();
+
+    const bottom =
+        H * 1.08;
+
+    return (
+        top +
+        (bottom - top) *
+        depth
+    );
+
+}
+
+
+function laneX(
+    laneIndex,
+    depth
+) {
+
+    const center =
+        W / 2;
 
     const spread =
-        W * 0.22;
+        W * 0.42;
 
-    return center +
-        lanes[laneIndex] *
+    return (
+        center +
+        (laneIndex - 1) *
         spread *
-        depth;
+        depth
+    );
 
 }
 
 
-function roadY(depth) {
+/* =========================================================
+   FONDO
+========================================================= */
 
-    const horizon =
-        H * 0.38;
+function drawSky() {
 
-    const bottom =
-        H * 1.05;
-
-    return horizon +
-        (bottom-horizon) *
-        depth;
-
-}
-
-
-/* ==========================================================
-   SELVA
-========================================================== */
-
-function drawJungle() {
-
-    /* cielo */
-
-    const sky =
+    const gradient =
         ctx.createLinearGradient(
-            0,0,0,H
+            0,
+            0,
+            0,
+            H
         );
 
-    sky.addColorStop(
+    gradient.addColorStop(
         0,
-        "#70b96b"
+        "#6caf62"
     );
 
-    sky.addColorStop(
+    gradient.addColorStop(
+        .5,
+        "#9cc76b"
+    );
+
+    gradient.addColorStop(
         1,
-        "#d1c77b"
+        "#c3ad63"
     );
-
-    ctx.fillStyle = sky;
-
-    ctx.fillRect(
-        0,0,W,H
-    );
-
-
-    /* vegetación */
-
-    for(let i=0;i<18;i++){
-
-        const side =
-            i % 2 === 0
-            ? 0
-            : W;
-
-        const x =
-            side === 0
-            ? i * 55
-            : W - i * 55;
-
-        const y =
-            H * .25 +
-            (i % 5) * 35;
-
-        ctx.fillStyle =
-            "#174b29";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            65,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
-    }
-
-
-    /* hojas */
-
-    for(let i=0;i<30;i++){
-
-        const x =
-            (i * 137) % W;
-
-        const y =
-            (i * 61) % (H*.5);
-
-        ctx.fillStyle =
-            "rgba(25,90,43,.65)";
-
-        ctx.beginPath();
-
-        ctx.ellipse(
-            x,
-            y,
-            45,
-            12,
-            i,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
-    }
-
-}
-
-
-/* ==========================================================
-   CAMINO
-========================================================== */
-
-function drawRoad() {
-
-    const horizon =
-        H * .38;
-
-    const bottom =
-        H * 1.1;
-
 
     ctx.fillStyle =
-        "#8b6239";
+        gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+}
+
+
+/* =========================================================
+   VEGETACIÓN LEJANA
+========================================================= */
+
+function drawFarJungle() {
+
+    ctx.fillStyle =
+        "#235b31";
 
     ctx.beginPath();
 
     ctx.moveTo(
-        W*.43,
-        horizon
+        0,
+        horizon()
+    );
+
+    for (
+        let x = 0;
+        x <= W;
+        x += 30
+    ) {
+
+        const y =
+            horizon() -
+            25 -
+            Math.sin(x*.05) *
+            20;
+
+        ctx.lineTo(
+            x,
+            y
+        );
+
+    }
+
+    ctx.lineTo(
+        W,
+        horizon()
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+}
+
+
+/* =========================================================
+   CAMINO
+========================================================= */
+
+function drawRoad() {
+
+    const h =
+        horizon();
+
+    ctx.fillStyle =
+        "#8b673d";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W*.45,
+        h
     );
 
     ctx.lineTo(
-        W*.57,
-        horizon
+        W*.55,
+        h
     );
 
     ctx.lineTo(
-        W*.95,
-        bottom
+        W*1.08,
+        H
     );
 
     ctx.lineTo(
-        W*.05,
-        bottom
+        -W*.08,
+        H
     );
 
     ctx.closePath();
@@ -818,70 +919,82 @@ function drawRoad() {
     ctx.fill();
 
 
-    /* bordes */
+    /* borde izquierdo */
 
     ctx.strokeStyle =
-        "#5b4027";
+        "#5b4028";
 
     ctx.lineWidth = 8;
 
     ctx.beginPath();
 
     ctx.moveTo(
-        W*.43,
-        horizon
+        W*.45,
+        h
     );
 
     ctx.lineTo(
-        W*.05,
-        bottom
-    );
-
-    ctx.moveTo(
-        W*.57,
-        horizon
-    );
-
-    ctx.lineTo(
-        W*.95,
-        bottom
+        -W*.08,
+        H
     );
 
     ctx.stroke();
 
 
-    /* líneas de los carriles */
+    /* borde derecho */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W*.55,
+        h
+    );
+
+    ctx.lineTo(
+        W*1.08,
+        H
+    );
+
+    ctx.stroke();
+
+
+    /* separación de zonas */
 
     ctx.strokeStyle =
-        "rgba(255,255,255,.18)";
+        "rgba(255,255,255,.20)";
 
     ctx.lineWidth = 4;
 
     ctx.setLineDash([
-        25,
-        30
+        30,
+        35
     ]);
 
-    for(let i=1;i<3;i++){
+
+    for (
+        let i = 1;
+        i < 3;
+        i++
+    ) {
 
         const topX =
-            W*.43 +
-            i * W*.07;
+            W*.45 +
+            i * W*.05;
 
         const bottomX =
-            W*.05 +
-            i * W*.45;
+            i * W*.5 -
+            W*.05;
 
         ctx.beginPath();
 
         ctx.moveTo(
             topX,
-            horizon
+            h
         );
 
         ctx.lineTo(
             bottomX,
-            bottom
+            H
         );
 
         ctx.stroke();
@@ -893,50 +1006,105 @@ function drawRoad() {
 }
 
 
-/* ==========================================================
-   ÁRBOLES
-========================================================== */
+/* =========================================================
+   ÁRBOLES EN MOVIMIENTO
+========================================================= */
+
+function createTree() {
+
+    trees.push({
+
+        side:
+            Math.random() < .5
+            ? -1
+            : 1,
+
+        depth: 0,
+
+        size:
+            .8 +
+            Math.random()*.5
+
+    });
+
+}
+
+
+function updateTrees(dt) {
+
+    for (
+        let i = trees.length-1;
+        i >= 0;
+        i--
+    ) {
+
+        trees[i].depth +=
+            speed *
+            dt *
+            .0018;
+
+        if (
+            trees[i].depth >
+            1.2
+        ) {
+
+            trees.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+}
+
 
 function drawTrees() {
 
-    for(let i=0;i<12;i++){
+    for (
+        const tree of trees
+    ) {
 
-        const depth =
-            ((i*.17 +
-            gameTime*.00025) % 1);
+        const d =
+            tree.depth;
 
         const y =
-            roadY(depth);
+            roadDepthY(d);
 
         const size =
-            20 +
-            depth * 90;
-
-        const side =
-            i % 2 === 0
-            ? -1
-            : 1;
+            (
+                20 +
+                d * 150
+            ) *
+            tree.size;
 
         const x =
             W/2 +
-            side *
-            (W*.35 +
-            depth*W*.25);
+            tree.side *
+            (
+                W*.34 +
+                d*W*.32
+            );
 
+
+        /* tronco */
 
         ctx.fillStyle =
-            "#4b3220";
+            "#4d3421";
 
         ctx.fillRect(
-            x-size*.15,
-            y-size,
-            size*.3,
-            size*1.2
+            x - size*.10,
+            y - size,
+            size*.20,
+            size*1.3
         );
 
 
+        /* copa */
+
         ctx.fillStyle =
-            "#1e5b2f";
+            "#1e5a30";
 
         ctx.beginPath();
 
@@ -950,328 +1118,54 @@ function drawTrees() {
 
         ctx.fill();
 
-    }
 
-}
-
-
-/* ==========================================================
-   CAPIBARA
-========================================================== */
-
-function drawCapybara() {
-
-    const x =
-        lerp(
-            laneX(lane),
-            laneX(targetLane),
-            .18
-        );
-
-    lane =
-        lerp(
-            lane,
-            targetLane,
-            .18
-        );
-
-
-    const baseY =
-        H*.79 -
-        jumpHeight;
-
-
-    ctx.save();
-
-    ctx.translate(
-        x,
-        baseY
-    );
-
-
-    if(rolling){
-
-        ctx.rotate(
-            -.15
-        );
-
-    }
-
-
-    /* sombra */
-
-    ctx.fillStyle =
-        "rgba(0,0,0,.25)";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        25,
-        55,
-        12,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* cuerpo */
-
-    ctx.fillStyle =
-        "#825c3b";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        0,
-        52,
-        35,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* cabeza */
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        40,
-        -17,
-        32,
-        27,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* oreja */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        28,
-        -40,
-        9,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* ojo */
-
-    ctx.fillStyle =
-        "#111";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        50,
-        -22,
-        4,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* nariz */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        67,
-        -10,
-        5,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* patas */
-
-    ctx.fillStyle =
-        "#68482f";
-
-    ctx.fillRect(
-        -28,
-        22,
-        10,
-        24
-    );
-
-    ctx.fillRect(
-        20,
-        22,
-        10,
-        24
-    );
-
-
-    ctx.restore();
-
-}
-
-
-/* ==========================================================
-   COCODRILO
-========================================================== */
-
-function drawCrocodile() {
-
-    const x =
-        W/2;
-
-    const y =
-        H*.91;
-
-
-    ctx.save();
-
-    ctx.translate(
-        x,
-        y
-    );
-
-
-    /* cuerpo */
-
-    ctx.fillStyle =
-        "#315e3a";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        25,
-        105,
-        30,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* cabeza */
-
-    ctx.fillStyle =
-        "#477c4b";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        75,
-        8,
-        55,
-        30,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* ojos */
-
-    ctx.fillStyle =
-        "#fff";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        75,
-        -13,
-        7,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    ctx.fillStyle =
-        "#111";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        77,
-        -13,
-        3,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* dientes */
-
-    ctx.fillStyle =
-        "#eee";
-
-    for(let i=0;i<6;i++){
+        ctx.fillStyle =
+            "#2c733c";
 
         ctx.beginPath();
 
-        ctx.moveTo(
-            50+i*10,
-            24
+        ctx.arc(
+            x-size*.3,
+            y-size*.9,
+            size*.4,
+            0,
+            Math.PI*2
         );
 
-        ctx.lineTo(
-            55+i*10,
-            37
-        );
-
-        ctx.lineTo(
-            60+i*10,
-            24
+        ctx.arc(
+            x+size*.3,
+            y-size*.85,
+            size*.4,
+            0,
+            Math.PI*2
         );
 
         ctx.fill();
 
     }
 
-
-    ctx.restore();
-
 }
 
 
-/* ==========================================================
+/* =========================================================
    OBJETOS
-========================================================== */
+========================================================= */
 
 function createObject() {
 
-    const typeRandom =
+    const random =
         Math.random();
 
     let type;
 
-    if(typeRandom < .45)
+    if (
+        random < .48
+    )
         type = "coin";
 
-    else if(typeRandom < .72)
+    else if (
+        random < .74
+    )
         type = "log";
 
     else
@@ -1294,116 +1188,179 @@ function createObject() {
 }
 
 
-/* ==========================================================
+/* =========================================================
+   ACTUALIZAR OBJETOS
+========================================================= */
+
+function updateObjects(dt) {
+
+    for (
+        let i =
+            objects.length-1;
+        i >= 0;
+        i--
+    ) {
+
+        const object =
+            objects[i];
+
+
+        object.depth +=
+            speed *
+            dt *
+            .0019;
+
+
+        if (
+            object.depth >
+            1.15
+        ) {
+
+            objects.splice(
+                i,
+                1
+            );
+
+            continue;
+
+        }
+
+
+        checkObjectCollision(
+            object,
+            i
+        );
+
+    }
+
+}
+
+
+/* =========================================================
    DIBUJAR OBJETOS
-========================================================== */
+========================================================= */
 
 function drawObjects() {
 
-    for(const obj of objects){
+    for (
+        const object
+        of objects
+    ) {
 
-        obj.depth +=
-            speed *
-            .012;
-
-
-        if(obj.depth > 1.1)
-            continue;
-
+        const d =
+            object.depth;
 
         const x =
             laneX(
-                obj.lane,
-                obj.depth
+                object.lane,
+                d
             );
 
         const y =
-            roadY(
-                obj.depth
-            );
+            roadDepthY(d);
+
 
         const size =
             10 +
-            obj.depth * 65;
+            d * 65;
 
 
-        ctx.save();
-
-        ctx.translate(
-            x,
-            y
-        );
-
-
-        if(obj.type === "coin"){
+        if (
+            object.type ===
+            "coin"
+        ) {
 
             ctx.fillStyle =
-                "#f4c542";
+                "#f3c43e";
 
             ctx.beginPath();
 
             ctx.arc(
-                0,
-                -size,
-                size*.25,
+                x,
+                y-size,
+                size*.27,
                 0,
                 Math.PI*2
             );
 
             ctx.fill();
 
-            ctx.strokeStyle =
-                "#fff1a3";
 
-            ctx.lineWidth = 3;
+            ctx.strokeStyle =
+                "#fff2a3";
+
+            ctx.lineWidth =
+                Math.max(
+                    1,
+                    d*4
+                );
 
             ctx.stroke();
 
         }
 
 
-        if(obj.type === "log"){
+        if (
+            object.type ===
+            "log"
+        ) {
 
             ctx.fillStyle =
-                "#593c26";
-
-            ctx.rotate(.1);
+                "#573a25";
 
             ctx.fillRect(
-                -size,
-                -size*.25,
+                x-size,
+                y-size*.35,
                 size*2,
-                size*.5
+                size*.7
             );
+
+            ctx.fillStyle =
+                "#8a6240";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x-size,
+                y,
+                size*.35,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
 
         }
 
 
-        if(obj.type === "rock"){
+        if (
+            object.type ===
+            "rock"
+        ) {
 
             ctx.fillStyle =
-                "#59645b";
+                "#59645a";
 
             ctx.beginPath();
 
             ctx.moveTo(
-                -size,
-                0
+                x-size,
+                y
             );
 
             ctx.lineTo(
-                -size*.5,
-                -size
+                x-size*.55,
+                y-size
             );
 
             ctx.lineTo(
-                size*.5,
-                -size*.8
+                x+size*.35,
+                y-size*.85
             );
 
             ctx.lineTo(
-                size,
-                0
+                x+size,
+                y
             );
 
             ctx.closePath();
@@ -1412,62 +1369,84 @@ function drawObjects() {
 
         }
 
-
-        ctx.restore();
-
     }
 
 }
 
 
-/* ==========================================================
+/* =========================================================
    COLISIONES
-========================================================== */
+========================================================= */
 
-function checkCollisions() {
+function checkObjectCollision(
+    object,
+    index
+) {
 
-    for(let i=objects.length-1;i>=0;i--){
+    if (
+        object.depth < .76 ||
+        object.depth > .96
+    )
+        return;
 
-        const obj =
-            objects[i];
+
+    if (
+        object.lane !==
+        Math.round(lane)
+    )
+        return;
 
 
-        if(obj.depth > .72 &&
-           obj.depth < .95 &&
-           obj.lane ===
-           Math.round(lane)){
+    /* moneda */
 
-            if(obj.type === "coin"){
+    if (
+        object.type ===
+        "coin"
+    ) {
 
-                coins++;
+        coins++;
 
-                objects.splice(
-                    i,
-                    1
-                );
+        objects.splice(
+            index,
+            1
+        );
 
-            }
+        return;
 
-            else if(obj.type === "log"){
+    }
 
-                if(jumpHeight < .12){
 
-                    endGame();
+    /* tronco */
 
-                }
+    if (
+        object.type ===
+        "log"
+    ) {
 
-            }
+        if (
+            jump < .12
+        ) {
 
-            else if(obj.type === "rock"){
+            endGame();
 
-                if(jumpHeight < .1 &&
-                   !rolling){
+        }
 
-                    endGame();
+    }
 
-                }
 
-            }
+    /* roca */
+
+    if (
+        object.type ===
+        "rock"
+    ) {
+
+        if (
+            jump < .12 &&
+            !rolling
+        ) {
+
+            endGame();
 
         }
 
@@ -1476,24 +1455,357 @@ function checkCollisions() {
 }
 
 
-/* ==========================================================
-   ACTUALIZAR SALTO
-========================================================== */
+/* =========================================================
+   CAPIBARA
+========================================================= */
+
+function drawCapybara() {
+
+    const x =
+        W/2 +
+        (
+            lane - 1
+        ) *
+        W*.22;
+
+
+    const baseY =
+        H*.79 -
+        jump*H*.28;
+
+
+    ctx.save();
+
+    ctx.translate(
+        x,
+        baseY
+    );
+
+
+    if (
+        rolling
+    ) {
+
+        ctx.rotate(
+            -.25
+        );
+
+    }
+
+
+    /* sombra */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.25)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        28,
+        55,
+        13,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* cuerpo */
+
+    ctx.fillStyle =
+        "#805b3b";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        0,
+        53,
+        35,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* cabeza */
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        42,
+        -18,
+        32,
+        27,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* oreja */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        29,
+        -40,
+        9,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* ojo */
+
+    ctx.fillStyle =
+        "#111";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        52,
+        -23,
+        4,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* nariz */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        68,
+        -11,
+        5,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* patas */
+
+    ctx.fillStyle =
+        "#65452e";
+
+    ctx.fillRect(
+        -28,
+        21,
+        10,
+        25
+    );
+
+    ctx.fillRect(
+        20,
+        21,
+        10,
+        25
+    );
+
+
+    ctx.restore();
+
+}
+
+
+/* =========================================================
+   COCODRILO
+========================================================= */
+
+function drawCrocodile() {
+
+    const x =
+        W/2;
+
+    const y =
+        H*.92;
+
+
+    ctx.save();
+
+    ctx.translate(
+        x,
+        y
+    );
+
+
+    /* cola */
+
+    ctx.strokeStyle =
+        "#315c39";
+
+    ctx.lineWidth =
+        24;
+
+    ctx.lineCap =
+        "round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        -110,
+        20
+    );
+
+    ctx.quadraticCurveTo(
+        -50,
+        45,
+        0,
+        25
+    );
+
+    ctx.stroke();
+
+
+    /* cuerpo */
+
+    ctx.fillStyle =
+        "#315e3a";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        20,
+        90,
+        28,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* cabeza */
+
+    ctx.fillStyle =
+        "#467b49";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        65,
+        5,
+        48,
+        28,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* ojo */
+
+    ctx.fillStyle =
+        "#fff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        72,
+        -12,
+        6,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#111";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        73,
+        -12,
+        3,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* dientes */
+
+    ctx.fillStyle =
+        "#f1f1e8";
+
+    for (
+        let i=0;
+        i<6;
+        i++
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            42+i*9,
+            21
+        );
+
+        ctx.lineTo(
+            46+i*9,
+            34
+        );
+
+        ctx.lineTo(
+            51+i*9,
+            21
+        );
+
+        ctx.fill();
+
+    }
+
+
+    ctx.restore();
+
+}
+
+
+/* =========================================================
+   SALTO
+========================================================= */
 
 function updateJump() {
 
-    if(jumpVelocity !== 0){
+    if (
+        jumpVelocity !== 0
+    ) {
 
-        jumpHeight +=
+        jump +=
             jumpVelocity;
 
         jumpVelocity -=
-            .0012;
+            .0015;
 
 
-        if(jumpHeight <= 0){
+        if (
+            jump <= 0
+        ) {
 
-            jumpHeight = 0;
+            jump = 0;
 
             jumpVelocity = 0;
 
@@ -1504,60 +1816,141 @@ function updateJump() {
 }
 
 
-/* ==========================================================
-   ACTUALIZAR JUEGO
-========================================================== */
+/* =========================================================
+   GENERACIÓN
+========================================================= */
 
-function update() {
+function generateWorld(dt) {
 
-    if(!playing)
-        return;
+    spawnTimer -=
+        dt;
 
-
-    gameTime++;
-
-
-    distance +=
-        speed;
+    treeTimer -=
+        dt;
 
 
-    speed +=
-        .00015;
-
-
-    if(speed > .95)
-        speed = .95;
-
-
-    spawnTimer--;
-
-
-    if(spawnTimer <= 0){
+    if (
+        spawnTimer <= 0
+    ) {
 
         createObject();
 
+        /*
+         * A veces aparecen
+         * varias monedas
+         */
+
+        if (
+            Math.random() < .3
+        ) {
+
+            const last =
+                objects[
+                    objects.length-1
+                ];
+
+
+            if (
+                last &&
+                last.type ===
+                "coin"
+            ) {
+
+                objects.push({
+
+                    type: "coin",
+
+                    lane:
+                        (last.lane + 1) % 3,
+
+                    depth:
+                        -.08
+
+                });
+
+            }
+
+        }
+
+
         spawnTimer =
             Math.max(
-                30,
-                75 -
-                speed*25
+                .45,
+                .95 -
+                speed*.35
             );
 
     }
 
 
+    if (
+        treeTimer <= 0
+    ) {
+
+        createTree();
+
+        createTree();
+
+        treeTimer =
+            .35;
+
+    }
+
+}
+
+
+/* =========================================================
+   ACTUALIZACIÓN
+========================================================= */
+
+function update(dt) {
+
+    if (!playing)
+        return;
+
+
+    distance +=
+        speed *
+        dt *
+        0.06;
+
+
+    speed +=
+        dt *
+        .003;
+
+
+    if (
+        speed > 1.25
+    )
+        speed = 1.25;
+
+
+    lane =
+        lane +
+        (
+            targetLane -
+            lane
+        ) *
+        Math.min(
+            1,
+            dt*.012
+        );
+
+
     updateJump();
 
-    checkCollisions();
+    generateWorld(
+        dt
+    );
 
+    updateObjects(
+        dt
+    );
 
-    /* limpiar */
-
-    objects =
-        objects.filter(
-            obj =>
-                obj.depth < 1.15
-        );
+    updateTrees(
+        dt
+    );
 
 
     coinsText.textContent =
@@ -1565,15 +1958,15 @@ function update() {
 
     distanceText.textContent =
         Math.floor(
-            distance/10
+            distance
         );
 
 }
 
 
-/* ==========================================================
+/* =========================================================
    DIBUJAR
-========================================================== */
+========================================================= */
 
 function draw() {
 
@@ -1585,7 +1978,9 @@ function draw() {
     );
 
 
-    drawJungle();
+    drawSky();
+
+    drawFarJungle();
 
     drawRoad();
 
@@ -1600,24 +1995,46 @@ function draw() {
 }
 
 
-/* ==========================================================
-   LOOP
-========================================================== */
+/* =========================================================
+   LOOP PRINCIPAL
+========================================================= */
 
-function gameLoop() {
+function loop(time) {
 
-    update();
+    const dt =
+        Math.min(
+            50,
+            time - lastTime
+        );
+
+    lastTime =
+        time;
+
+
+    if (playing) {
+
+        update(dt);
+
+    }
+
 
     draw();
 
+
     requestAnimationFrame(
-        gameLoop
+        loop
     );
 
 }
 
-gameLoop();
 
+/* =========================================================
+   COMENZAR RENDER
+========================================================= */
+
+requestAnimationFrame(
+    loop
+);
 
 </script>
 
