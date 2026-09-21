@@ -3,2038 +3,1527 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0,
-               maximum-scale=1.0, user-scalable=no">
-
-<title>CAPILIANO - Jungle Run</title>
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CAPILIANO — Jungle Run</title>
 
 <style>
-
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
+html, body {
+    margin: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #06130a;
+    background: #07140c;
     font-family: Arial, Helvetica, sans-serif;
     touch-action: none;
 }
 
 canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
     display: block;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
 }
 
-/* =========================
-   PANTALLA DE INICIO
-========================= */
-
-#startScreen {
-
+.overlay {
     position: fixed;
     inset: 0;
-
-    z-index: 20;
-
+    z-index: 10;
     display: flex;
-    flex-direction: column;
-
     justify-content: center;
     align-items: center;
-
     text-align: center;
-
+    color: white;
     background:
-        linear-gradient(
-            rgba(5,30,14,.20),
-            rgba(2,12,7,.82)
-        );
-
+        radial-gradient(circle at center, rgba(25,80,40,.55), rgba(3,15,9,.96));
+    transition: opacity .35s ease;
     pointer-events: auto;
 }
 
-.title {
+.overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 
-    font-size:
-        clamp(48px, 12vw, 100px);
+.menu {
+    padding: 30px;
+}
 
-    font-weight: 1000;
-
-    letter-spacing: 5px;
-
-    color: #f1d16a;
-
+.logo {
+    font-size: clamp(42px, 12vw, 82px);
+    font-weight: 900;
+    letter-spacing: -3px;
     text-shadow:
-        0 5px 0 #654b17,
-        0 12px 35px rgba(0,0,0,.8);
-
+        0 5px 0 #152b16,
+        0 0 30px rgba(100,255,130,.25);
 }
 
 .subtitle {
-
-    margin-top: 5px;
-
-    font-size:
-        clamp(12px, 3vw, 20px);
-
-    letter-spacing: 6px;
-
-    color: white;
-
-    opacity: .9;
-
+    margin-top: -5px;
+    font-size: 16px;
+    letter-spacing: 7px;
+    opacity: .8;
 }
 
-.startCapy {
-
-    font-size:
-        clamp(75px, 22vw, 150px);
-
+.capy-icon {
+    font-size: 75px;
     margin: 25px 0;
-
-    animation:
-        capyIdle 1.4s
-        ease-in-out infinite;
-
+    animation: floating 1.6s ease-in-out infinite;
 }
 
-@keyframes capyIdle {
-
-    0%,100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-13px);
-    }
-
+.tap {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    animation: pulse 1.2s ease-in-out infinite;
 }
 
-.tapText {
+.small {
+    margin-top: 20px;
+    font-size: 12px;
+    opacity: .55;
+    line-height: 1.6;
+}
 
-    font-size:
-        clamp(17px, 4vw, 27px);
+@keyframes floating {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
 
-    font-weight: 900;
+@keyframes pulse {
+    0%,100% { opacity: .45; }
+    50% { opacity: 1; }
+}
 
-    letter-spacing: 4px;
-
+#hud {
+    position: fixed;
+    z-index: 5;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
     color: white;
-
-    animation:
-        blink 1.2s infinite;
-
+    font-weight: bold;
+    font-size: 17px;
+    text-shadow: 0 2px 4px #000;
 }
 
-@keyframes blink {
+.hudBox {
+    padding: 9px 13px;
+    border-radius: 14px;
+    background: rgba(0,0,0,.28);
+    backdrop-filter: blur(5px);
+}
+</style>
+</head>
 
-    0%,100% {
-        opacity: 1;
-    }
+<body>
 
-    50% {
-        opacity: .45;
-    }
+<canvas id="game"></canvas>
 
+<div id="hud">
+    <div class="hudBox">🪙 <span id="coins">0</span></div>
+    <div class="hudBox">🏃 <span id="distance">0</span> m</div>
+</div>
+
+<div id="startScreen" class="overlay">
+    <div class="menu">
+        <div class="logo">CAPILIANO</div>
+        <div class="subtitle">JUNGLE RUN</div>
+
+        <div class="capy-icon">🦫</div>
+
+        <div class="tap">TOCA PARA INICIAR</div>
+
+        <div class="small">
+            ← → cambiar de dirección<br>
+            ↑ saltar · ↓ rodar
+        </div>
+    </div>
+</div>
+
+<div id="gameOver" class="overlay hidden">
+    <div class="menu">
+        <div class="logo" style="font-size:48px;">¡TE ATRAPÓ!</div>
+
+        <div class="capy-icon">🐊</div>
+
+        <div id="finalStats" class="tap"></div>
+
+        <div class="tap" style="margin-top:25px;">
+            TOCA PARA VOLVER A JUGAR
+        </div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W = 0;
+let H = 0;
+let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+window.addEventListener("resize", resize);
+resize();
+
+/* =========================
+   ESTADO DEL JUEGO
+========================= */
+
+let running = false;
+let gameOver = false;
+
+let coins = 0;
+let distance = 0;
+
+let speed = 0.48;
+let maxSpeed = 1.25;
+
+let lane = 1;
+let targetLane = 1;
+
+let playerY = 0;
+let verticalVelocity = 0;
+
+let jumping = false;
+let rolling = false;
+let rollTimer = 0;
+
+let runTime = 0;
+let cameraShake = 0;
+
+let worldObjects = [];
+let jungleObjects = [];
+
+let spawnTimer = 0;
+let coinTimer = 0;
+let treeTimer = 0;
+
+let lastTime = performance.now();
+
+/* =========================
+   UTILIDADES
+========================= */
+
+function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+}
+
+/* =========================
+   PERSPECTIVA
+========================= */
+
+function horizonY() {
+    return H * 0.40;
+}
+
+function groundY() {
+    return H * 0.96;
+}
+
+function depthY(z) {
+    return horizonY() + (groundY() - horizonY()) * Math.pow(z, 1.35);
+}
+
+function laneX(l, z) {
+    const center = W / 2;
+
+    // Los carriles se separan mucho más cerca de la cámara.
+    const spread = W * 0.14 * (0.18 + z * 1.2);
+
+    return center + (l - 1) * spread;
+}
+
+function objectScale(z) {
+    return 0.18 + z * 1.35;
+}
+
+/* =========================
+   INICIAR / REINICIAR
+========================= */
+
+function startGame() {
+    running = true;
+    gameOver = false;
+
+    coins = 0;
+    distance = 0;
+
+    speed = 0.48;
+
+    lane = 1;
+    targetLane = 1;
+
+    playerY = 0;
+    verticalVelocity = 0;
+
+    jumping = false;
+    rolling = false;
+    rollTimer = 0;
+
+    runTime = 0;
+    cameraShake = 0;
+
+    worldObjects = [];
+    jungleObjects = [];
+
+    spawnTimer = .2;
+    coinTimer = .4;
+    treeTimer = .1;
+
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("gameOver").classList.add("hidden");
+
+    updateHUD();
+}
+
+/* =========================
+   GAME OVER
+========================= */
+
+function endGame() {
+    if (!running) return;
+
+    running = false;
+    gameOver = true;
+
+    document.getElementById("finalStats").innerHTML =
+        `Distancia: ${Math.floor(distance)} m<br>🪙 Monedas: ${coins}`;
+
+    document.getElementById("gameOver").classList.remove("hidden");
+}
+
+/* =========================
+   MOVIMIENTO
+========================= */
+
+function moveLeft() {
+    if (!running) return;
+
+    targetLane = clamp(targetLane - 1, 0, 2);
+}
+
+function moveRight() {
+    if (!running) return;
+
+    targetLane = clamp(targetLane + 1, 0, 2);
+}
+
+function jump() {
+    if (!running || jumping || rolling) return;
+
+    jumping = true;
+    verticalVelocity = 0.95;
+}
+
+function roll() {
+    if (!running || jumping || rolling) return;
+
+    rolling = true;
+    rollTimer = 0.65;
+}
+
+/* =========================
+   CONTROLES TÁCTILES
+========================= */
+
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+
+canvas.addEventListener("pointerdown", e => {
+
+    touchStartX = e.clientX;
+    touchStartY = e.clientY;
+    touchStartTime = performance.now();
+
+    if (!running && !gameOver) {
+        startGame();
+    }
+
+    if (!running && gameOver) {
+        startGame();
+    }
+});
+
+canvas.addEventListener("pointerup", e => {
+
+    if (!running) return;
+
+    const dx = e.clientX - touchStartX;
+    const dy = e.clientY - touchStartY;
+
+    const distanceTouch = Math.sqrt(dx * dx + dy * dy);
+
+    // Toque corto: salto
+    if (distanceTouch < 25) {
+        jump();
+        return;
+    }
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+
+        if (Math.abs(dx) > 35) {
+            if (dx > 0) {
+                moveRight();
+            } else {
+                moveLeft();
+            }
+        }
+
+    } else {
+
+        if (Math.abs(dy) > 35) {
+
+            if (dy < 0) {
+                jump();
+            } else {
+                roll();
+            }
+        }
+    }
+});
+
+/* =========================
+   TECLADO
+========================= */
+
+window.addEventListener("keydown", e => {
+
+    if (!running && !gameOver) {
+        startGame();
+        return;
+    }
+
+    if (gameOver) {
+        startGame();
+        return;
+    }
+
+    if (e.key === "ArrowLeft" || e.key === "a")
+        moveLeft();
+
+    if (e.key === "ArrowRight" || e.key === "d")
+        moveRight();
+
+    if (e.key === "ArrowUp" || e.key === "w" || e.key === " ")
+        jump();
+
+    if (e.key === "ArrowDown" || e.key === "s")
+        roll();
+});
+
+/* =========================
+   GENERACIÓN DEL MUNDO
+========================= */
+
+function createObstacle() {
+
+    const typeRandom = Math.random();
+
+    let type;
+
+    if (typeRandom < .48)
+        type = "rock";
+    else if (typeRandom < .78)
+        type = "log";
+    else
+        type = "branch";
+
+    worldObjects.push({
+        type,
+        lane: Math.floor(Math.random() * 3),
+        z: 0.02,
+        hit: false,
+        wobble: Math.random() * Math.PI * 2
+    });
+}
+
+function createCoinLine() {
+
+    const selectedLane = Math.floor(Math.random() * 3);
+
+    const amount = Math.floor(rand(3, 7));
+
+    for (let i = 0; i < amount; i++) {
+
+        worldObjects.push({
+            type: "coin",
+            lane: selectedLane,
+            z: 0.02 - i * 0.075,
+            collected: false,
+            rotation: Math.random() * Math.PI * 2
+        });
+    }
+}
+
+function createTree() {
+
+    const side = Math.random() < .5 ? -1 : 1;
+
+    jungleObjects.push({
+        side,
+        z: 0.02,
+        offset: rand(0.02, .20),
+        size: rand(.8, 1.25),
+        type: Math.random() < .5 ? "tree" : "bush"
+    });
+}
+
+/* =========================
+   ACTUALIZAR
+========================= */
+
+function update(dt) {
+
+    if (!running) return;
+
+    // dt ahora está en segundos.
+    runTime += dt;
+
+    // El juego acelera progresivamente.
+    speed = Math.min(
+        maxSpeed,
+        0.48 + distance * 0.0008
+    );
+
+    distance += speed * dt * 95;
+
+    /* Cambio de carril suave */
+
+    lane += (targetLane - lane) * Math.min(1, dt * 12);
+
+    /* Salto */
+
+    if (jumping) {
+
+        playerY += verticalVelocity * dt * 2.8;
+        verticalVelocity -= 2.45 * dt;
+
+        if (playerY <= 0) {
+            playerY = 0;
+            jumping = false;
+            verticalVelocity = 0;
+        }
+    }
+
+    /* Rodar */
+
+    if (rolling) {
+
+        rollTimer -= dt;
+
+        if (rollTimer <= 0) {
+            rolling = false;
+        }
+    }
+
+    /* Generación */
+
+    spawnTimer -= dt;
+
+    if (spawnTimer <= 0) {
+
+        createObstacle();
+
+        // Más rápido conforme avanza.
+        spawnTimer = rand(.65, 1.05) / (0.8 + speed * .35);
+    }
+
+    coinTimer -= dt;
+
+    if (coinTimer <= 0) {
+
+        createCoinLine();
+
+        coinTimer = rand(1.0, 1.8);
+    }
+
+    treeTimer -= dt;
+
+    if (treeTimer <= 0) {
+
+        createTree();
+
+        if (Math.random() < .7)
+            createTree();
+
+        treeTimer = rand(.18, .35);
+    }
+
+    /* Objetos */
+
+    for (let i = worldObjects.length - 1; i >= 0; i--) {
+
+        const obj = worldObjects[i];
+
+        obj.z += speed * dt * 0.95;
+
+        if (obj.type === "coin") {
+            obj.rotation += dt * 7;
+        }
+
+        if (obj.z > 1.12) {
+            worldObjects.splice(i, 1);
+            continue;
+        }
+
+        checkCollision(obj);
+    }
+
+    /* Vegetación */
+
+    for (let i = jungleObjects.length - 1; i >= 0; i--) {
+
+        const tree = jungleObjects[i];
+
+        tree.z += speed * dt * .9;
+
+        if (tree.z > 1.15) {
+            jungleObjects.splice(i, 1);
+        }
+    }
+
+    if (cameraShake > 0) {
+        cameraShake -= dt;
+    }
+
+    updateHUD();
+}
+
+/* =========================
+   COLISIONES
+========================= */
+
+function checkCollision(obj) {
+
+    if (obj.hit || obj.collected) return;
+
+    // Zona donde el objeto está cerca del jugador.
+    if (obj.z < .78 || obj.z > .98) return;
+
+    const playerLane = Math.round(lane);
+
+    if (obj.lane !== playerLane) return;
+
+    if (obj.type === "coin") {
+
+        obj.collected = true;
+
+        coins++;
+
+        cameraShake = .04;
+
+        return;
+    }
+
+    /*
+      Obstáculos:
+      saltando = evita
+      rodando = evita ramas
+    */
+
+    if (obj.type === "branch" && rolling) {
+        obj.hit = true;
+        return;
+    }
+
+    if (jumping && playerY > .15) {
+        obj.hit = true;
+        return;
+    }
+
+    endGame();
+}
 
 /* =========================
    HUD
 ========================= */
 
-#hud {
+function updateHUD() {
 
-    position: fixed;
-
-    top: 15px;
-    left: 15px;
-    right: 15px;
-
-    z-index: 10;
-
-    display: none;
-
-    justify-content:
-        space-between;
-
-    pointer-events: none;
-
+    document.getElementById("coins").textContent = coins;
+    document.getElementById("distance").textContent =
+        Math.floor(distance);
 }
-
-.hudBox {
-
-    padding:
-        9px 15px;
-
-    border-radius:
-        30px;
-
-    background:
-        rgba(0,0,0,.42);
-
-    border:
-        1px solid
-        rgba(255,255,255,.18);
-
-    color: white;
-
-    font-size: 15px;
-
-    font-weight: 800;
-
-    backdrop-filter:
-        blur(8px);
-
-}
-
 
 /* =========================
-   GAME OVER
+   DIBUJO DEL CIELO
 ========================= */
-
-#gameOver {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 30;
-
-    display: none;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    text-align: center;
-
-    background:
-        rgba(0,0,0,.72);
-
-    color: white;
-
-}
-
-#gameOver h1 {
-
-    font-size:
-        clamp(34px, 8vw, 70px);
-
-    margin-bottom: 15px;
-
-}
-
-#gameOver p {
-
-    line-height: 1.8;
-
-    font-size: 19px;
-
-}
-
-#restartText {
-
-    margin-top: 30px;
-
-    font-weight: 900;
-
-    font-size: 18px;
-
-    letter-spacing: 2px;
-
-    animation:
-        blink 1.2s infinite;
-
-}
-
-</style>
-</head>
-
-
-<body>
-
-
-<canvas id="game"></canvas>
-
-
-<!-- =========================
-     INICIO
-========================= -->
-
-<div id="startScreen">
-
-    <div class="title">
-        CAPILIANO
-    </div>
-
-    <div class="subtitle">
-        JUNGLE RUN
-    </div>
-
-    <div class="startCapy">
-        🦫
-    </div>
-
-    <div class="tapText">
-        TOCA PARA INICIAR
-    </div>
-
-</div>
-
-
-<!-- =========================
-     HUD
-========================= -->
-
-<div id="hud">
-
-    <div class="hudBox">
-        🪙 <span id="coins">0</span>
-    </div>
-
-    <div class="hudBox">
-        🏃 <span id="distance">0</span> m
-    </div>
-
-</div>
-
-
-<!-- =========================
-     GAME OVER
-========================= -->
-
-<div id="gameOver">
-
-    <h1>
-        🐊 ¡TE ATRAPÓ!
-    </h1>
-
-    <p>
-
-        Recorriste
-        <strong>
-            <span id="finalDistance">0</span> metros
-        </strong>
-
-        <br>
-
-        🪙
-        <span id="finalCoins">0</span>
-        monedas
-
-    </p>
-
-    <div id="restartText">
-        TOCA PARA VOLVER A JUGAR
-    </div>
-
-</div>
-
-
-<script>
-
-/* =========================================================
-   CAPILIANO
-   JUNGLE RUN
-========================================================= */
-
-
-const canvas =
-    document.getElementById("game");
-
-const ctx =
-    canvas.getContext("2d");
-
-
-let W;
-let H;
-
-
-function resize() {
-
-    W =
-        canvas.width =
-        window.innerWidth;
-
-    H =
-        canvas.height =
-        window.innerHeight;
-
-}
-
-resize();
-
-window.addEventListener(
-    "resize",
-    resize
-);
-
-
-/* =========================================================
-   ELEMENTOS
-========================================================= */
-
-const startScreen =
-    document.getElementById(
-        "startScreen"
-    );
-
-const hud =
-    document.getElementById(
-        "hud"
-    );
-
-const gameOver =
-    document.getElementById(
-        "gameOver"
-    );
-
-const coinsText =
-    document.getElementById(
-        "coins"
-    );
-
-const distanceText =
-    document.getElementById(
-        "distance"
-    );
-
-const finalCoins =
-    document.getElementById(
-        "finalCoins"
-    );
-
-const finalDistance =
-    document.getElementById(
-        "finalDistance"
-    );
-
-
-/* =========================================================
-   ESTADO
-========================================================= */
-
-let playing = false;
-
-let lastTime = 0;
-
-let distance = 0;
-
-let coins = 0;
-
-let speed = 0.42;
-
-let lane = 1;
-
-let targetLane = 1;
-
-let jump = 0;
-
-let jumpVelocity = 0;
-
-let rolling = false;
-
-let objects = [];
-
-let trees = [];
-
-let groundMarks = [];
-
-let spawnTimer = 0;
-
-let treeTimer = 0;
-
-
-/* =========================================================
-   GESTOS
-========================================================= */
-
-let touchStartX = 0;
-
-let touchStartY = 0;
-
-let touchActive = false;
-
-
-/* =========================================================
-   INICIAR CON CUALQUIER TOQUE
-========================================================= */
-
-startScreen.addEventListener(
-    "pointerdown",
-    startGame
-);
-
-
-gameOver.addEventListener(
-    "pointerdown",
-    startGame
-);
-
-
-function startGame() {
-
-    playing = true;
-
-    distance = 0;
-
-    coins = 0;
-
-    speed = 0.42;
-
-    lane = 1;
-
-    targetLane = 1;
-
-    jump = 0;
-
-    jumpVelocity = 0;
-
-    rolling = false;
-
-    objects = [];
-
-    trees = [];
-
-    groundMarks = [];
-
-    spawnTimer = 0;
-
-    treeTimer = 0;
-
-    startScreen.style.display =
-        "none";
-
-    gameOver.style.display =
-        "none";
-
-    hud.style.display =
-        "flex";
-
-    lastTime =
-        performance.now();
-
-}
-
-
-/* =========================================================
-   GAME OVER
-========================================================= */
-
-function endGame() {
-
-    playing = false;
-
-    finalCoins.textContent =
-        coins;
-
-    finalDistance.textContent =
-        Math.floor(
-            distance
-        );
-
-    gameOver.style.display =
-        "flex";
-
-}
-
-
-/* =========================================================
-   CONTROLES TÁCTILES
-========================================================= */
-
-canvas.addEventListener(
-    "pointerdown",
-    event => {
-
-        if (!playing)
-            return;
-
-        touchActive = true;
-
-        touchStartX =
-            event.clientX;
-
-        touchStartY =
-            event.clientY;
-
-    }
-);
-
-
-canvas.addEventListener(
-    "pointerup",
-    event => {
-
-        if (!playing ||
-            !touchActive)
-            return;
-
-        touchActive = false;
-
-        const dx =
-            event.clientX -
-            touchStartX;
-
-        const dy =
-            event.clientY -
-            touchStartY;
-
-        const absX =
-            Math.abs(dx);
-
-        const absY =
-            Math.abs(dy);
-
-
-        /* toque pequeño */
-
-        if (
-            absX < 35 &&
-            absY < 35
-        ) {
-
-            return;
-
-        }
-
-
-        /* movimiento horizontal */
-
-        if (
-            absX > absY
-        ) {
-
-            if (dx < 0)
-                moveLeft();
-
-            else
-                moveRight();
-
-        }
-
-
-        /* movimiento vertical */
-
-        else {
-
-            if (dy < 0)
-                jumpPlayer();
-
-            else
-                rollPlayer();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   MOVIMIENTO
-========================================================= */
-
-function moveLeft() {
-
-    targetLane--;
-
-    if (targetLane < 0)
-        targetLane = 0;
-
-}
-
-
-function moveRight() {
-
-    targetLane++;
-
-    if (targetLane > 2)
-        targetLane = 2;
-
-}
-
-
-function jumpPlayer() {
-
-    if (
-        jump === 0 &&
-        !rolling
-    ) {
-
-        jumpVelocity =
-            0.035;
-
-    }
-
-}
-
-
-function rollPlayer() {
-
-    if (jump === 0) {
-
-        rolling = true;
-
-        setTimeout(
-            () => {
-                rolling = false;
-            },
-            650
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   TECLADO
-   TAMBIÉN FUNCIONA EN PC
-========================================================= */
-
-window.addEventListener(
-    "keydown",
-    event => {
-
-        if (!playing)
-            return;
-
-        if (
-            event.key ===
-            "ArrowLeft"
-        )
-            moveLeft();
-
-        if (
-            event.key ===
-            "ArrowRight"
-        )
-            moveRight();
-
-        if (
-            event.key ===
-            "ArrowUp"
-        )
-            jumpPlayer();
-
-        if (
-            event.key ===
-            "ArrowDown"
-        )
-            rollPlayer();
-
-    }
-);
-
-
-/* =========================================================
-   PERSPECTIVA
-========================================================= */
-
-function horizon() {
-
-    return H * 0.38;
-
-}
-
-
-function roadDepthY(
-    depth
-) {
-
-    const top =
-        horizon();
-
-    const bottom =
-        H * 1.08;
-
-    return (
-        top +
-        (bottom - top) *
-        depth
-    );
-
-}
-
-
-function laneX(
-    laneIndex,
-    depth
-) {
-
-    const center =
-        W / 2;
-
-    const spread =
-        W * 0.42;
-
-    return (
-        center +
-        (laneIndex - 1) *
-        spread *
-        depth
-    );
-
-}
-
-
-/* =========================================================
-   FONDO
-========================================================= */
 
 function drawSky() {
 
-    const gradient =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            H
-        );
+    const gradient = ctx.createLinearGradient(0, 0, 0, H);
 
-    gradient.addColorStop(
-        0,
-        "#6caf62"
-    );
+    gradient.addColorStop(0, "#75c8e8");
+    gradient.addColorStop(.45, "#b4e2c0");
+    gradient.addColorStop(.7, "#4b8f4a");
+    gradient.addColorStop(1, "#17391d");
 
-    gradient.addColorStop(
-        .5,
-        "#9cc76b"
-    );
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, W, H);
+}
 
-    gradient.addColorStop(
-        1,
-        "#c3ad63"
-    );
+/* =========================
+   SELVA LEJANA
+========================= */
 
-    ctx.fillStyle =
-        gradient;
+function drawDistantJungle() {
+
+    const horizon = horizonY();
+
+    ctx.fillStyle = "#1f6335";
+
+    ctx.beginPath();
+
+    ctx.moveTo(0, horizon + 30);
+
+    for (let x = 0; x <= W; x += 35) {
+
+        const y =
+            horizon +
+            Math.sin(x * .025) * 15 +
+            Math.sin(x * .07) * 9 +
+            10;
+
+        ctx.lineTo(x, y);
+    }
+
+    ctx.lineTo(W, horizon + 120);
+    ctx.lineTo(0, horizon + 120);
+
+    ctx.closePath();
+    ctx.fill();
+
+    // Copas
+    for (let x = -20; x < W + 40; x += 45) {
+
+        const y = horizon + rand(-5, 35);
+
+        ctx.fillStyle = "#174b28";
+
+        ctx.beginPath();
+        ctx.arc(x, y, rand(25, 48), 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+/* =========================
+   CAMINO
+========================= */
+
+function drawPath() {
+
+    const h = horizonY();
+
+    // Zona de tierra
+    ctx.fillStyle = "#4f7a3c";
+
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(W, h);
+    ctx.lineTo(W, H);
+    ctx.lineTo(0, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Camino trapezoidal
+    ctx.fillStyle = "#9b7448";
+
+    ctx.beginPath();
+
+    ctx.moveTo(W * .47, h);
+    ctx.lineTo(W * .53, h);
+    ctx.lineTo(W * .94, H);
+    ctx.lineTo(W * .06, H);
+
+    ctx.closePath();
+    ctx.fill();
+
+    // Bordes del camino
+    ctx.strokeStyle = "#d0a56a";
+    ctx.lineWidth = 5;
+
+    ctx.beginPath();
+    ctx.moveTo(W * .47, h);
+    ctx.lineTo(W * .06, H);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(W * .53, h);
+    ctx.lineTo(W * .94, H);
+    ctx.stroke();
+
+    // Líneas de profundidad.
+    for (let i = 0; i < 12; i++) {
+
+        const z = ((i / 12) + runTime * speed * .25) % 1;
+
+        const y = depthY(z);
+
+        const width =
+            W * (.02 + z * .35);
+
+        ctx.strokeStyle = "rgba(255,255,255,.12)";
+        ctx.lineWidth = Math.max(1, z * 4);
+
+        ctx.beginPath();
+        ctx.moveTo(W / 2 - width, y);
+        ctx.lineTo(W / 2 + width, y);
+        ctx.stroke();
+    }
+}
+
+/* =========================
+   VEGETACIÓN
+========================= */
+
+function drawTree(tree) {
+
+    const z = tree.z;
+
+    const y = depthY(z);
+
+    const sideX =
+        tree.side < 0
+            ? W * (.08 - tree.offset * z)
+            : W * (.92 + tree.offset * z);
+
+    const scale =
+        objectScale(z) * tree.size;
+
+    ctx.save();
+
+    ctx.translate(sideX, y);
+
+    /* Tronco */
+
+    ctx.fillStyle = "#58391e";
 
     ctx.fillRect(
-        0,
-        0,
-        W,
-        H
+        -12 * scale,
+        -90 * scale,
+        24 * scale,
+        90 * scale
     );
 
-}
+    /* Hojas */
 
-
-/* =========================================================
-   VEGETACIÓN LEJANA
-========================================================= */
-
-function drawFarJungle() {
-
-    ctx.fillStyle =
-        "#235b31";
+    ctx.fillStyle = "#174b24";
 
     ctx.beginPath();
-
-    ctx.moveTo(
+    ctx.arc(
         0,
-        horizon()
+        -110 * scale,
+        55 * scale,
+        0,
+        Math.PI * 2
     );
-
-    for (
-        let x = 0;
-        x <= W;
-        x += 30
-    ) {
-
-        const y =
-            horizon() -
-            25 -
-            Math.sin(x*.05) *
-            20;
-
-        ctx.lineTo(
-            x,
-            y
-        );
-
-    }
-
-    ctx.lineTo(
-        W,
-        horizon()
-    );
-
-    ctx.closePath();
-
     ctx.fill();
 
-}
-
-
-/* =========================================================
-   CAMINO
-========================================================= */
-
-function drawRoad() {
-
-    const h =
-        horizon();
-
-    ctx.fillStyle =
-        "#8b673d";
+    ctx.fillStyle = "#26733a";
 
     ctx.beginPath();
-
-    ctx.moveTo(
-        W*.45,
-        h
+    ctx.arc(
+        -30 * scale,
+        -125 * scale,
+        42 * scale,
+        0,
+        Math.PI * 2
     );
-
-    ctx.lineTo(
-        W*.55,
-        h
-    );
-
-    ctx.lineTo(
-        W*1.08,
-        H
-    );
-
-    ctx.lineTo(
-        -W*.08,
-        H
-    );
-
-    ctx.closePath();
-
     ctx.fill();
 
-
-    /* borde izquierdo */
-
-    ctx.strokeStyle =
-        "#5b4028";
-
-    ctx.lineWidth = 8;
-
     ctx.beginPath();
-
-    ctx.moveTo(
-        W*.45,
-        h
+    ctx.arc(
+        32 * scale,
+        -120 * scale,
+        45 * scale,
+        0,
+        Math.PI * 2
     );
+    ctx.fill();
 
-    ctx.lineTo(
-        -W*.08,
-        H
-    );
+    ctx.restore();
+}
 
+/* =========================
+   OBJETOS
+========================= */
+
+function drawCoin(obj) {
+
+    if (obj.collected) return;
+
+    const z = obj.z;
+
+    const x = laneX(obj.lane, z);
+    const y = depthY(z) - 45 * objectScale(z);
+
+    const s = objectScale(z);
+
+    ctx.save();
+
+    ctx.translate(x, y);
+
+    ctx.rotate(Math.sin(obj.rotation) * .25);
+
+    ctx.scale(s, s);
+
+    // Sombra
+    ctx.fillStyle = "rgba(0,0,0,.2)";
+    ctx.beginPath();
+    ctx.ellipse(0, 28, 25, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Moneda
+    ctx.fillStyle = "#ffd83d";
+    ctx.beginPath();
+    ctx.arc(0, 0, 25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#b87800";
+    ctx.lineWidth = 5;
     ctx.stroke();
 
+    ctx.fillStyle = "#fff1a0";
+    ctx.font = "bold 22px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("$", 0, 1);
 
-    /* borde derecho */
+    ctx.restore();
+}
 
-    ctx.beginPath();
+function drawObstacle(obj) {
 
-    ctx.moveTo(
-        W*.55,
-        h
-    );
+    if (obj.hit) return;
 
-    ctx.lineTo(
-        W*1.08,
-        H
-    );
+    const z = obj.z;
 
-    ctx.stroke();
+    const x = laneX(obj.lane, z);
+    const y = depthY(z);
 
+    const s = objectScale(z);
 
-    /* separación de zonas */
+    ctx.save();
 
-    ctx.strokeStyle =
-        "rgba(255,255,255,.20)";
+    ctx.translate(x, y);
+    ctx.scale(s, s);
 
-    ctx.lineWidth = 4;
+    if (obj.type === "rock") {
 
-    ctx.setLineDash([
-        30,
-        35
-    ]);
-
-
-    for (
-        let i = 1;
-        i < 3;
-        i++
-    ) {
-
-        const topX =
-            W*.45 +
-            i * W*.05;
-
-        const bottomX =
-            i * W*.5 -
-            W*.05;
+        ctx.fillStyle = "#555b4f";
 
         ctx.beginPath();
+        ctx.moveTo(-42, 10);
+        ctx.lineTo(-30, -25);
+        ctx.lineTo(0, -42);
+        ctx.lineTo(35, -25);
+        ctx.lineTo(45, 10);
+        ctx.closePath();
+        ctx.fill();
 
-        ctx.moveTo(
-            topX,
-            h
-        );
+        ctx.fillStyle = "#747b6b";
 
-        ctx.lineTo(
-            bottomX,
-            H
-        );
+        ctx.beginPath();
+        ctx.moveTo(-20, -22);
+        ctx.lineTo(0, -38);
+        ctx.lineTo(16, -20);
+        ctx.closePath();
+        ctx.fill();
+    }
 
+    if (obj.type === "log") {
+
+        ctx.fillStyle = "#704321";
+
+        ctx.rotate(-.08);
+
+        ctx.fillRect(-55, -15, 110, 35);
+
+        ctx.fillStyle = "#a86d3c";
+
+        ctx.beginPath();
+        ctx.arc(-55, 2, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#3c2615";
+
+        ctx.beginPath();
+        ctx.arc(-55, 2, 10, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    if (obj.type === "branch") {
+
+        ctx.strokeStyle = "#4c2c18";
+        ctx.lineWidth = 20;
+        ctx.lineCap = "round";
+
+        ctx.beginPath();
+        ctx.moveTo(-65, -80);
+        ctx.lineTo(65, -80);
         ctx.stroke();
 
-    }
-
-    ctx.setLineDash([]);
-
-}
-
-
-/* =========================================================
-   ÁRBOLES EN MOVIMIENTO
-========================================================= */
-
-function createTree() {
-
-    trees.push({
-
-        side:
-            Math.random() < .5
-            ? -1
-            : 1,
-
-        depth: 0,
-
-        size:
-            .8 +
-            Math.random()*.5
-
-    });
-
-}
-
-
-function updateTrees(dt) {
-
-    for (
-        let i = trees.length-1;
-        i >= 0;
-        i--
-    ) {
-
-        trees[i].depth +=
-            speed *
-            dt *
-            .0018;
-
-        if (
-            trees[i].depth >
-            1.2
-        ) {
-
-            trees.splice(
-                i,
-                1
-            );
-
-        }
-
-    }
-
-}
-
-
-function drawTrees() {
-
-    for (
-        const tree of trees
-    ) {
-
-        const d =
-            tree.depth;
-
-        const y =
-            roadDepthY(d);
-
-        const size =
-            (
-                20 +
-                d * 150
-            ) *
-            tree.size;
-
-        const x =
-            W/2 +
-            tree.side *
-            (
-                W*.34 +
-                d*W*.32
-            );
-
-
-        /* tronco */
-
-        ctx.fillStyle =
-            "#4d3421";
-
-        ctx.fillRect(
-            x - size*.10,
-            y - size,
-            size*.20,
-            size*1.3
-        );
-
-
-        /* copa */
-
-        ctx.fillStyle =
-            "#1e5a30";
+        ctx.lineWidth = 12;
 
         ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y-size,
-            size*.65,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
-
-        ctx.fillStyle =
-            "#2c733c";
+        ctx.moveTo(-25, -80);
+        ctx.lineTo(-45, -125);
+        ctx.stroke();
 
         ctx.beginPath();
-
-        ctx.arc(
-            x-size*.3,
-            y-size*.9,
-            size*.4,
-            0,
-            Math.PI*2
-        );
-
-        ctx.arc(
-            x+size*.3,
-            y-size*.85,
-            size*.4,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
+        ctx.moveTo(25, -80);
+        ctx.lineTo(50, -120);
+        ctx.stroke();
     }
 
+    ctx.restore();
 }
 
-
-/* =========================================================
-   OBJETOS
-========================================================= */
-
-function createObject() {
-
-    const random =
-        Math.random();
-
-    let type;
-
-    if (
-        random < .48
-    )
-        type = "coin";
-
-    else if (
-        random < .74
-    )
-        type = "log";
-
-    else
-        type = "rock";
-
-
-    objects.push({
-
-        type,
-
-        lane:
-            Math.floor(
-                Math.random()*3
-            ),
-
-        depth: 0
-
-    });
-
-}
-
-
-/* =========================================================
-   ACTUALIZAR OBJETOS
-========================================================= */
-
-function updateObjects(dt) {
-
-    for (
-        let i =
-            objects.length-1;
-        i >= 0;
-        i--
-    ) {
-
-        const object =
-            objects[i];
-
-
-        object.depth +=
-            speed *
-            dt *
-            .0019;
-
-
-        if (
-            object.depth >
-            1.15
-        ) {
-
-            objects.splice(
-                i,
-                1
-            );
-
-            continue;
-
-        }
-
-
-        checkObjectCollision(
-            object,
-            i
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   DIBUJAR OBJETOS
-========================================================= */
-
-function drawObjects() {
-
-    for (
-        const object
-        of objects
-    ) {
-
-        const d =
-            object.depth;
-
-        const x =
-            laneX(
-                object.lane,
-                d
-            );
-
-        const y =
-            roadDepthY(d);
-
-
-        const size =
-            10 +
-            d * 65;
-
-
-        if (
-            object.type ===
-            "coin"
-        ) {
-
-            ctx.fillStyle =
-                "#f3c43e";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                x,
-                y-size,
-                size*.27,
-                0,
-                Math.PI*2
-            );
-
-            ctx.fill();
-
-
-            ctx.strokeStyle =
-                "#fff2a3";
-
-            ctx.lineWidth =
-                Math.max(
-                    1,
-                    d*4
-                );
-
-            ctx.stroke();
-
-        }
-
-
-        if (
-            object.type ===
-            "log"
-        ) {
-
-            ctx.fillStyle =
-                "#573a25";
-
-            ctx.fillRect(
-                x-size,
-                y-size*.35,
-                size*2,
-                size*.7
-            );
-
-            ctx.fillStyle =
-                "#8a6240";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                x-size,
-                y,
-                size*.35,
-                0,
-                Math.PI*2
-            );
-
-            ctx.fill();
-
-        }
-
-
-        if (
-            object.type ===
-            "rock"
-        ) {
-
-            ctx.fillStyle =
-                "#59645a";
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                x-size,
-                y
-            );
-
-            ctx.lineTo(
-                x-size*.55,
-                y-size
-            );
-
-            ctx.lineTo(
-                x+size*.35,
-                y-size*.85
-            );
-
-            ctx.lineTo(
-                x+size,
-                y
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   COLISIONES
-========================================================= */
-
-function checkObjectCollision(
-    object,
-    index
-) {
-
-    if (
-        object.depth < .76 ||
-        object.depth > .96
-    )
-        return;
-
-
-    if (
-        object.lane !==
-        Math.round(lane)
-    )
-        return;
-
-
-    /* moneda */
-
-    if (
-        object.type ===
-        "coin"
-    ) {
-
-        coins++;
-
-        objects.splice(
-            index,
-            1
-        );
-
-        return;
-
-    }
-
-
-    /* tronco */
-
-    if (
-        object.type ===
-        "log"
-    ) {
-
-        if (
-            jump < .12
-        ) {
-
-            endGame();
-
-        }
-
-    }
-
-
-    /* roca */
-
-    if (
-        object.type ===
-        "rock"
-    ) {
-
-        if (
-            jump < .12 &&
-            !rolling
-        ) {
-
-            endGame();
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
+/* =========================
    CAPIBARA
-========================================================= */
+========================= */
 
 function drawCapybara() {
 
     const x =
-        W/2 +
-        (
-            lane - 1
-        ) *
-        W*.22;
-
+        laneX(lane, 1);
 
     const baseY =
-        H*.79 -
-        jump*H*.28;
+        H * .84 - playerY * H * .24;
 
+    /*
+      Animación de carrera:
+      cada pata alterna con la otra.
+      runTime controla todo el ciclo.
+    */
+
+    const runCycle =
+        Math.sin(runTime * 18);
+
+    const legA =
+        Math.sin(runTime * 18) * 14;
+
+    const legB =
+        Math.sin(runTime * 18 + Math.PI) * 14;
+
+    // Rebote natural al correr.
+    const bounce =
+        Math.abs(Math.sin(runTime * 18)) * 4;
 
     ctx.save();
 
-    ctx.translate(
-        x,
-        baseY
-    );
+    ctx.translate(x, baseY - bounce);
 
-
-    if (
-        rolling
-    ) {
-
-        ctx.rotate(
-            -.25
-        );
-
+    // Si está rodando, hacemos al capibara pequeño.
+    if (rolling) {
+        ctx.rotate(-.08);
+        ctx.scale(1.18, .62);
     }
 
+    // Sombra
+    if (!jumping) {
 
-    /* sombra */
+        ctx.fillStyle = "rgba(0,0,0,.28)";
 
-    ctx.fillStyle =
-        "rgba(0,0,0,.25)";
+        ctx.beginPath();
+
+        ctx.ellipse(
+            0,
+            54,
+            70,
+            15,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+
+    /* Cola */
+
+    ctx.strokeStyle = "#704a2c";
+    ctx.lineWidth = 12;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(58, 0);
+    ctx.quadraticCurveTo(83, -15, 82, 12);
+    ctx.stroke();
+
+    /* PATAS TRASERAS */
+
+    ctx.strokeStyle = "#6b4528";
+    ctx.lineWidth = 15;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(30, 30);
+    ctx.lineTo(38 + legA, 62);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-25, 30);
+    ctx.lineTo(-33 + legB, 62);
+    ctx.stroke();
+
+    /* Cuerpo */
+
+    ctx.fillStyle = "#9a6740";
 
     ctx.beginPath();
 
     ctx.ellipse(
         0,
-        28,
-        55,
-        13,
         0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* cuerpo */
-
-    ctx.fillStyle =
-        "#805b3b";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        0,
-        53,
-        35,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* cabeza */
-
-    ctx.beginPath();
-
-    ctx.ellipse(
+        65,
         42,
-        -18,
-        32,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    /* Barriga */
+
+    ctx.fillStyle = "#b57b50";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        -5,
+        12,
+        43,
         27,
         0,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
 
     ctx.fill();
 
+    /* Cuello */
 
-    /* oreja */
+    ctx.fillStyle = "#9a6740";
 
     ctx.beginPath();
 
-    ctx.arc(
-        29,
-        -40,
-        9,
+    ctx.ellipse(
+        -45,
+        -15,
+        34,
+        34,
+        -.15,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
 
     ctx.fill();
 
+    /* Cabeza */
 
-    /* ojo */
-
-    ctx.fillStyle =
-        "#111";
+    ctx.fillStyle = "#9a6740";
 
     ctx.beginPath();
 
-    ctx.arc(
-        52,
-        -23,
-        4,
+    ctx.ellipse(
+        -67,
+        -39,
+        43,
+        35,
+        -.08,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
 
     ctx.fill();
 
+    /* Oreja */
 
-    /* nariz */
+    ctx.fillStyle = "#754b2d";
+
+    ctx.beginPath();
+    ctx.arc(-84, -68, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* Hocico */
+
+    ctx.fillStyle = "#7a4c2d";
 
     ctx.beginPath();
 
-    ctx.arc(
-        68,
-        -11,
-        5,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* patas */
-
-    ctx.fillStyle =
-        "#65452e";
-
-    ctx.fillRect(
-        -28,
-        21,
-        10,
-        25
-    );
-
-    ctx.fillRect(
+    ctx.ellipse(
+        -101,
+        -34,
         20,
-        21,
-        10,
-        25
+        15,
+        0,
+        0,
+        Math.PI * 2
     );
 
+    ctx.fill();
+
+    /* Nariz */
+
+    ctx.fillStyle = "#241812";
+
+    ctx.beginPath();
+    ctx.ellipse(-110, -37, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* Ojo */
+
+    ctx.fillStyle = "#111";
+
+    ctx.beginPath();
+    ctx.arc(-79, -48, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* PATAS DELANTERAS */
+
+    ctx.strokeStyle = "#754b2d";
+    ctx.lineWidth = 13;
+
+    ctx.beginPath();
+    ctx.moveTo(-38, 20);
+    ctx.lineTo(-45 + legB * .7, 58);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-8, 22);
+    ctx.lineTo(2 + legA * .7, 58);
+    ctx.stroke();
+
+    /* Patitas */
+
+    ctx.strokeStyle = "#51321f";
+    ctx.lineWidth = 8;
+
+    ctx.beginPath();
+    ctx.moveTo(-45 + legB * .7, 58);
+    ctx.lineTo(-53 + legB * .7, 62);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(2 + legA * .7, 58);
+    ctx.lineTo(10 + legA * .7, 62);
+    ctx.stroke();
 
     ctx.restore();
-
 }
 
-
-/* =========================================================
+/* =========================
    COCODRILO
-========================================================= */
+========================= */
 
 function drawCrocodile() {
 
     const x =
-        W/2;
+        laneX(lane, 1) - W * .005;
 
     const y =
-        H*.92;
+        H * .925;
 
+    /*
+      El cocodrilo tiene un ciclo
+      diferente pero sincronizado con
+      una carrera.
+    */
+
+    const cycle =
+        Math.sin(runTime * 15);
+
+    const leg1 =
+        Math.sin(runTime * 15) * 13;
+
+    const leg2 =
+        Math.sin(runTime * 15 + Math.PI) * 13;
 
     ctx.save();
 
-    ctx.translate(
-        x,
-        y
-    );
+    ctx.translate(x, y);
 
+    // Sombra
+    ctx.fillStyle = "rgba(0,0,0,.35)";
 
-    /* cola */
+    ctx.beginPath();
+    ctx.ellipse(0, 45, 100, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    ctx.strokeStyle =
-        "#315c39";
+    /* Cola */
 
-    ctx.lineWidth =
-        24;
-
-    ctx.lineCap =
-        "round";
+    ctx.strokeStyle = "#214d2c";
+    ctx.lineWidth = 27;
+    ctx.lineCap = "round";
 
     ctx.beginPath();
 
-    ctx.moveTo(
-        -110,
-        20
-    );
-
+    ctx.moveTo(55, 12);
     ctx.quadraticCurveTo(
-        -50,
-        45,
-        0,
-        25
+        110,
+        25,
+        150 + cycle * 8,
+        0
     );
 
     ctx.stroke();
 
+    /* Patas */
 
-    /* cuerpo */
+    ctx.strokeStyle = "#2d6135";
+    ctx.lineWidth = 14;
 
-    ctx.fillStyle =
-        "#315e3a";
+    ctx.beginPath();
+    ctx.moveTo(-30, 25);
+    ctx.lineTo(-45 + leg1, 55);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(25, 25);
+    ctx.lineTo(35 + leg2, 55);
+    ctx.stroke();
+
+    /* Cuerpo */
+
+    ctx.fillStyle = "#306b3b";
 
     ctx.beginPath();
 
     ctx.ellipse(
         0,
-        20,
-        90,
-        28,
         0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* cabeza */
-
-    ctx.fillStyle =
-        "#467b49";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        65,
-        5,
-        48,
-        28,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    /* ojo */
-
-    ctx.fillStyle =
-        "#fff";
-
-    ctx.beginPath();
-
-    ctx.arc(
         72,
-        -12,
-        6,
+        30,
         0,
-        Math.PI*2
+        0,
+        Math.PI * 2
     );
 
     ctx.fill();
 
+    /* Cabeza */
 
-    ctx.fillStyle =
-        "#111";
+    ctx.fillStyle = "#397947";
 
     ctx.beginPath();
 
-    ctx.arc(
-        73,
-        -12,
-        3,
+    ctx.ellipse(
+        -68,
+        -5,
+        43,
+        27,
         0,
-        Math.PI*2
+        0,
+        Math.PI * 2
     );
 
     ctx.fill();
 
+    /* Hocico */
 
-    /* dientes */
+    ctx.fillStyle = "#4b8b51";
 
-    ctx.fillStyle =
-        "#f1f1e8";
+    ctx.beginPath();
 
-    for (
-        let i=0;
-        i<6;
-        i++
-    ) {
+    ctx.ellipse(
+        -105,
+        0,
+        40,
+        14,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    /* Ojo */
+
+    ctx.fillStyle = "#e7c940";
+
+    ctx.beginPath();
+    ctx.arc(-77, -22, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#111";
+
+    ctx.beginPath();
+    ctx.arc(-77, -22, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* Dientes */
+
+    ctx.fillStyle = "#fff";
+
+    for (let i = 0; i < 6; i++) {
 
         ctx.beginPath();
 
         ctx.moveTo(
-            42+i*9,
-            21
+            -125 + i * 11,
+            9
         );
 
         ctx.lineTo(
-            46+i*9,
-            34
+            -120 + i * 11,
+            22
         );
 
         ctx.lineTo(
-            51+i*9,
-            21
+            -114 + i * 11,
+            9
+        );
+
+        ctx.closePath();
+
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+/* =========================
+   PARTÍCULAS / POLVO
+========================= */
+
+function drawDust() {
+
+    if (!running) return;
+
+    const amount = 8;
+
+    for (let i = 0; i < amount; i++) {
+
+        const x =
+            W / 2 +
+            rand(-W * .12, W * .12);
+
+        const y =
+            H * .91 +
+            rand(-5, 18);
+
+        const size =
+            rand(1, 4);
+
+        ctx.fillStyle =
+            "rgba(235,220,180,.35)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            size,
+            0,
+            Math.PI * 2
         );
 
         ctx.fill();
-
     }
-
-
-    ctx.restore();
-
 }
 
-
-/* =========================================================
-   SALTO
-========================================================= */
-
-function updateJump() {
-
-    if (
-        jumpVelocity !== 0
-    ) {
-
-        jump +=
-            jumpVelocity;
-
-        jumpVelocity -=
-            .0015;
-
-
-        if (
-            jump <= 0
-        ) {
-
-            jump = 0;
-
-            jumpVelocity = 0;
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   GENERACIÓN
-========================================================= */
-
-function generateWorld(dt) {
-
-    spawnTimer -=
-        dt;
-
-    treeTimer -=
-        dt;
-
-
-    if (
-        spawnTimer <= 0
-    ) {
-
-        createObject();
-
-        /*
-         * A veces aparecen
-         * varias monedas
-         */
-
-        if (
-            Math.random() < .3
-        ) {
-
-            const last =
-                objects[
-                    objects.length-1
-                ];
-
-
-            if (
-                last &&
-                last.type ===
-                "coin"
-            ) {
-
-                objects.push({
-
-                    type: "coin",
-
-                    lane:
-                        (last.lane + 1) % 3,
-
-                    depth:
-                        -.08
-
-                });
-
-            }
-
-        }
-
-
-        spawnTimer =
-            Math.max(
-                .45,
-                .95 -
-                speed*.35
-            );
-
-    }
-
-
-    if (
-        treeTimer <= 0
-    ) {
-
-        createTree();
-
-        createTree();
-
-        treeTimer =
-            .35;
-
-    }
-
-}
-
-
-/* =========================================================
-   ACTUALIZACIÓN
-========================================================= */
-
-function update(dt) {
-
-    if (!playing)
-        return;
-
-
-    distance +=
-        speed *
-        dt *
-        0.06;
-
-
-    speed +=
-        dt *
-        .003;
-
-
-    if (
-        speed > 1.25
-    )
-        speed = 1.25;
-
-
-    lane =
-        lane +
-        (
-            targetLane -
-            lane
-        ) *
-        Math.min(
-            1,
-            dt*.012
-        );
-
-
-    updateJump();
-
-    generateWorld(
-        dt
-    );
-
-    updateObjects(
-        dt
-    );
-
-    updateTrees(
-        dt
-    );
-
-
-    coinsText.textContent =
-        coins;
-
-    distanceText.textContent =
-        Math.floor(
-            distance
-        );
-
-}
-
-
-/* =========================================================
-   DIBUJAR
-========================================================= */
+/* =========================
+   DIBUJAR TODO
+========================= */
 
 function draw() {
 
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
+    ctx.save();
 
+    if (cameraShake > 0) {
+
+        ctx.translate(
+            rand(-2, 2),
+            rand(-2, 2)
+        );
+    }
 
     drawSky();
+    drawDistantJungle();
+    drawPath();
 
-    drawFarJungle();
+    /*
+      Primero árboles lejanos,
+      luego objetos del camino.
+    */
 
-    drawRoad();
+    const sortedTrees =
+        [...jungleObjects]
+        .sort((a, b) => a.z - b.z);
 
-    drawTrees();
+    for (const tree of sortedTrees) {
+        drawTree(tree);
+    }
 
-    drawObjects();
+    const sortedObjects =
+        [...worldObjects]
+        .sort((a, b) => a.z - b.z);
+
+    for (const obj of sortedObjects) {
+
+        if (obj.type === "coin")
+            drawCoin(obj);
+        else
+            drawObstacle(obj);
+    }
+
+    drawDust();
 
     drawCrocodile();
-
     drawCapybara();
 
+    ctx.restore();
 }
 
-
-/* =========================================================
-   LOOP PRINCIPAL
-========================================================= */
+/* =========================
+   LOOP
+========================= */
 
 function loop(time) {
 
-    const dt =
-        Math.min(
-            50,
-            time - lastTime
-        );
+    let dt =
+        (time - lastTime) / 1000;
 
-    lastTime =
-        time;
+    lastTime = time;
 
+    // Evita saltos enormes si se bloquea la pestaña.
+    dt = Math.min(dt, .05);
 
-    if (playing) {
-
-        update(dt);
-
-    }
-
-
+    update(dt);
     draw();
 
-
-    requestAnimationFrame(
-        loop
-    );
-
+    requestAnimationFrame(loop);
 }
 
-
-/* =========================================================
-   COMENZAR RENDER
-========================================================= */
-
-requestAnimationFrame(
-    loop
-);
+requestAnimationFrame(loop);
 
 </script>
 
